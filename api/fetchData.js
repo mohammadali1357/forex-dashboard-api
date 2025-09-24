@@ -98,13 +98,20 @@ function calculateATR(highs, lows, closes, period = 14) {
 }
 
 module.exports = async (req, res) => {
-    // Set CORS headers
+    // Comprehensive CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    
+    // Handle preflight OPTIONS request
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
+    }
+    
+    // Only allow GET requests
+    if (req.method !== 'GET') {
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
@@ -175,3 +182,4 @@ module.exports = async (req, res) => {
         });
     }
 };
+
