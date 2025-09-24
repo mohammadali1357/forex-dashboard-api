@@ -1,7 +1,16 @@
 {
   "name": "forex-dashboard-api",
   "version": "1.0.0",
+  "description": "Forex Dashboard API for trading data",
+  "main": "api/fetchData.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
-    "axios": "^1.6.0"
-  }
+    "yahoo-finance2": "^2.4.0"
+  },
+  "keywords": ["forex", "trading", "api"],
+  "author": "",
+  "license": "MIT"
 }
+
