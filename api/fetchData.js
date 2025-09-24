@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       success: true,
       message: 'API is working!',
       timestamp: new Date().toISOString(),
-      testData: [
+      Data: [
         { symbol: 'EUR/USD', price: '1.0850' },
         { symbol: 'GBP/USD', price: '1.2650' }
       ]
@@ -33,3 +33,4 @@ module.exports = async (req, res) => {
     });
   }
 };
+
