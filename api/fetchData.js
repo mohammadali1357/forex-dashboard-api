@@ -39,6 +39,15 @@ function calculateMACD(prices, fastPeriod = 12, slowPeriod = 26, signalPeriod = 
     if (prices.length < slowPeriod + signalPeriod) return null;
     
     // Calculate EMAs
+    const calculateEMA = (data, period) => {
+        const k = 2 / (period + 1);
+        const ema = [data[0]];
+        for (let i = 1; i < data.length; i++) {
+            ema.push(data[i] * k + ema[i - 1] * (1 - k));
+        }
+        return ema;
+    };
+    
     const fastEMA = calculateEMA(prices, fastPeriod);
     const slowEMA = calculateEMA(prices, slowPeriod);
     
@@ -64,17 +73,6 @@ function calculateMACD(prices, fastPeriod = 12, slowPeriod = 26, signalPeriod = 
     };
 }
 
-function calculateEMA(prices, period) {
-    const k = 2 / (period + 1);
-    const ema = [prices[0]]; // Start with first price
-    
-    for (let i = 1; i < prices.length; i++) {
-        ema.push(prices[i] * k + ema[i - 1] * (1 - k));
-    }
-    
-    return ema;
-}
-
 function calculateATR(highs, lows, closes, period = 14) {
     if (highs.length < period + 1) return null;
     
@@ -95,6 +93,21 @@ function calculateATR(highs, lows, closes, period = 14) {
     atr /= period;
     
     return atr;
+}
+
+function calculateSMA(prices, period) {
+    if (prices.length < period) return null;
+    
+    const sma = [];
+    for (let i = period - 1; i < prices.length; i++) {
+        let sum = 0;
+        for (let j = 0; j < period; j++) {
+            sum += prices[i - j];
+        }
+        sma.push(sum / period);
+    }
+    
+    return sma[sma.length - 1];
 }
 
 module.exports = async (req, res) => {
@@ -121,7 +134,7 @@ module.exports = async (req, res) => {
             'GBPCAD=X', 'EURAUD=X', 'EURCAD=X', 'AUDCAD=X', 'GBPAUD=X', 'GBPNZD=X', 'EURNZD=X',
             'AUDNZD=X', 'CHFJPY=X', 'CADCHF=X', 'NZDCAD=X', 'NZDCHF=X', 'GBPCHF=X', 'EURSEK=X',
             'GC=F', 'SI=F', 'CL=F', 'BZ=F', 'NG=F', 'HG=F', 'PL=F', 'PA=F', 'ZC=F', 'ZS=F', 'ZM=F',
-            'DX-Y.NYB', 'EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'AUDUSD=X', 'USDCAD=X', 'USDCHF=X', 'NZDUSD=X'
+            'DX-Y.NYB'
         ];
 
         const results = [];
@@ -131,14 +144,14 @@ module.exports = async (req, res) => {
                 // Get current quote
                 const quote = await yahooFinance.quote(symbol);
                 
-                // Get historical data for indicators (last 30 days)
+                // Get historical data for indicators (last 60 days)
                 const historical = await yahooFinance.historical(symbol, {
-                    period1: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    period1: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                     period2: new Date().toISOString().split('T')[0],
                     interval: '1d'
                 });
 
-                if (historical && historical.length > 0) {
+                if (historical && historical.length > 15) { // Need at least 15 days for RSI
                     const closes = historical.map(h => h.close).filter(Boolean);
                     const highs = historical.map(h => h.high).filter(Boolean);
                     const lows = historical.map(h => h.low).filter(Boolean);
@@ -147,16 +160,69 @@ module.exports = async (req, res) => {
                     const rsi = calculateRSI(closes);
                     const macd = calculateMACD(closes);
                     const atr = calculateATR(highs, lows, closes);
+                    const sma20 = calculateSMA(closes, 20);
+                    const sma50 = calculateSMA(closes, 50);
+                    
+                    // Determine trend based on moving averages
+                    let trend = "Neutral";
+                    if (sma20 && sma50) {
+                        if (closes[closes.length - 1] > sma20 && sma20 > sma50) trend = "Bullish";
+                        else if (closes[closes.length - 1] < sma20 && sma20 < sma50) trend = "Bearish";
+                    }
+                    
+                    // Determine RSI condition
+                    let rsiCondition = "Neutral";
+                    if (rsi > 70) rsiCondition = "Overbought";
+                    else if (rsi < 30) rsiCondition = "Oversold";
+                    
+                    // Determine MACD signal
+                    let macdSignal = "Neutral";
+                    if (macd && macd.macd > macd.signal) macdSignal = "Bullish";
+                    else if (macd && macd.macd < macd.signal) macdSignal = "Bearish";
+                    
+                    // Format symbol for display
+                    let displaySymbol = symbol;
+                    if (symbol === 'GC=F') displaySymbol = 'XAU/USD';
+                    if (symbol === 'SI=F') displaySymbol = 'XAG/USD';
+                    if (symbol.endsWith('=X')) displaySymbol = symbol.replace('=X', '');
                     
                     results.push({
-                        symbol: symbol.replace('=X', '').replace('-USD', '/USD').replace('GC=F', 'XAU/USD').replace('SI=F', 'XAG/USD'),
+                        symbol: displaySymbol,
                         price: quote.regularMarketPrice || 'N/A',
                         change: quote.regularMarketChange || 0,
                         changePercent: quote.regularMarketChangePercent || 0,
-                        rsi: rsi ? rsi.toFixed(2) : 'N/A',
-                        macd: macd ? macd.macd.toFixed(4) : 'N/A',
-                        macdSignal: macd ? macd.signal.toFixed(4) : 'N/A',
-                        atr: atr ? atr.toFixed(4) : 'N/A',
+                        trend: trend,
+                        rsi: rsi ? Math.round(rsi) : 'N/A',
+                        rsiCondition: rsiCondition,
+                        macd: macd ? macd.macd.toFixed(5) : 'N/A',
+                        macdSignal: macdSignal,
+                        macdHistogram: macd ? macd.histogram.toFixed(5) : 'N/A',
+                        atr: atr ? atr.toFixed(5) : 'N/A',
+                        sma20: sma20 ? sma20.toFixed(5) : 'N/A',
+                        sma50: sma50 ? sma50.toFixed(5) : 'N/A',
+                        timestamp: new Date().toISOString()
+                    });
+                } else {
+                    // Fallback if no historical data
+                    let displaySymbol = symbol;
+                    if (symbol === 'GC=F') displaySymbol = 'XAU/USD';
+                    if (symbol === 'SI=F') displaySymbol = 'XAG/USD';
+                    if (symbol.endsWith('=X')) displaySymbol = symbol.replace('=X', '');
+                    
+                    results.push({
+                        symbol: displaySymbol,
+                        price: quote.regularMarketPrice || 'N/A',
+                        change: quote.regularMarketChange || 0,
+                        changePercent: quote.regularMarketChangePercent || 0,
+                        trend: "Neutral",
+                        rsi: 'N/A',
+                        rsiCondition: "Neutral",
+                        macd: 'N/A',
+                        macdSignal: "Neutral",
+                        macdHistogram: 'N/A',
+                        atr: 'N/A',
+                        sma20: 'N/A',
+                        sma50: 'N/A',
                         timestamp: new Date().toISOString()
                     });
                 }
@@ -182,4 +248,5 @@ module.exports = async (req, res) => {
         });
     }
 };
+
 
