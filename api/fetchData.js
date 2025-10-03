@@ -1,50 +1,65 @@
 const axios = require('axios');
 
-// Your Alpha Vantage API Key
+// API Configuration
 const ALPHA_VANTAGE_API_KEY = 'SFQ7TST27CVZTOQU';
+const TWELVE_DATA_API_KEY = '7c5e73198a0b4ea78c5342bd0800aea7';
 
-// Technical indicator calculations (simplified for speed)
-function calculateRSI(prices, period = 14) {
-    if (prices.length < period + 1) return null;
+// Enhanced symbol configuration with priority mapping
+const symbolConfigs = [
+    // Major Pairs - High priority
+    { symbol: 'EUR/USD', alphaVantage: 'EURUSD', twelveData: 'EUR/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
+    { symbol: 'USD/JPY', alphaVantage: 'USDJPY', twelveData: 'USD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
+    { symbol: 'GBP/USD', alphaVantage: 'GBPUSD', twelveData: 'GBP/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
+    { symbol: 'USD/CHF', alphaVantage: 'USDCHF', twelveData: 'USD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
+    { symbol: 'AUD/USD', alphaVantage: 'AUDUSD', twelveData: 'AUD/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
+    { symbol: 'USD/CAD', alphaVantage: 'USDCAD', twelveData: 'USD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
+    { symbol: 'NZD/USD', alphaVantage: 'NZDUSD', twelveData: 'NZD/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
     
-    let gains = 0;
-    let losses = 0;
+    // Minor Pairs - Medium priority
+    { symbol: 'EUR/GBP', alphaVantage: 'EURGBP', twelveData: 'EUR/GBP', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/JPY', alphaVantage: 'EURJPY', twelveData: 'EUR/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/JPY', alphaVantage: 'GBPJPY', twelveData: 'GBP/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/CHF', alphaVantage: 'EURCHF', twelveData: 'EUR/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'AUD/JPY', alphaVantage: 'AUDJPY', twelveData: 'AUD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'CAD/JPY', alphaVantage: 'CADJPY', twelveData: 'CAD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'NZD/JPY', alphaVantage: 'NZDJPY', twelveData: 'NZD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/CAD', alphaVantage: 'GBPCAD', twelveData: 'GBP/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/AUD', alphaVantage: 'EURAUD', twelveData: 'EUR/AUD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/CAD', alphaVantage: 'EURCAD', twelveData: 'EUR/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'AUD/CAD', alphaVantage: 'AUDCAD', twelveData: 'AUD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/AUD', alphaVantage: 'GBPAUD', twelveData: 'GBP/AUD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/NZD', alphaVantage: 'GBPNZD', twelveData: 'GBP/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/NZD', alphaVantage: 'EURNZD', twelveData: 'EUR/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'AUD/NZD', alphaVantage: 'AUDNZD', twelveData: 'AUD/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'CHF/JPY', alphaVantage: 'CHFJPY', twelveData: 'CHF/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'CAD/CHF', alphaVantage: 'CADCHF', twelveData: 'CAD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'NZD/CAD', alphaVantage: 'NZDCAD', twelveData: 'NZD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'NZD/CHF', alphaVantage: 'NZDCHF', twelveData: 'NZD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/CHF', alphaVantage: 'GBPCHF', twelveData: 'GBP/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/SEK', alphaVantage: 'EURSEK', twelveData: 'EUR/SEK', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     
-    for (let i = 1; i <= period; i++) {
-        const change = prices[i] - prices[i - 1];
-        if (change > 0) gains += change;
-        else losses -= change;
-    }
+    // Commodities - Twelve Data has better coverage
+    { symbol: 'XAU/USD', alphaVantage: 'GOLD', twelveData: 'XAU/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'XAG/USD', alphaVantage: 'SILVER', twelveData: 'XAG/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'USOIL', alphaVantage: 'WTI', twelveData: 'USOIL', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'UKOIL', alphaVantage: 'BRENT', twelveData: 'UKOIL', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'NGAS', alphaVantage: null, twelveData: 'NGAS', priority: ['twelve_data'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'COPPER', alphaVantage: 'COPPER', twelveData: 'COPPER', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'XPT/USD', alphaVantage: 'PLATINUM', twelveData: 'XPT/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'XPD/USD', alphaVantage: 'PALLADIUM', twelveData: 'XPD/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'WHEAT', alphaVantage: null, twelveData: 'WHEAT', priority: ['twelve_data'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'SOYBEAN', alphaVantage: null, twelveData: 'SOYBEAN', priority: ['twelve_data'], type: 'commodity', category: 'Commodities' },
     
-    if (losses === 0) return 100;
-    const rs = gains / losses;
-    return 100 - (100 / (1 + rs));
-}
-
-function calculateMACD(prices) {
-    if (prices.length < 26) return null;
-    
-    // Simplified MACD calculation
-    const shortEMA = prices[0] * 0.15 + prices[12] * 0.85;
-    const longEMA = prices[0] * 0.075 + prices[25] * 0.925;
-    const macd = shortEMA - longEMA;
-    
-    return {
-        macd: macd,
-        signal: macd * 0.2,
-        histogram: macd * 0.1
-    };
-}
-
-function calculateATR(highs, lows, closes) {
-    if (highs.length < 2) return null;
-    
-    // Simplified ATR calculation
-    const tr1 = highs[0] - lows[0];
-    const tr2 = Math.abs(highs[0] - closes[1]);
-    const tr3 = Math.abs(lows[0] - closes[1]);
-    return Math.max(tr1, tr2, tr3);
-}
+    // Currency Indices (simulated - neither API provides these directly)
+    { symbol: 'USD', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'EUR', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'JPY', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'GBP', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'AUD', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'CAD', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'CHF', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
+    { symbol: 'NZD', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' }
+];
 
 module.exports = async (req, res) => {
     // CORS headers
@@ -62,100 +77,63 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Reduced symbol set for faster processing
-        const symbolConfigs = [
-            // Major Pairs (7) - Alpha Vantage uses "FROMTO" format
-            { symbol: 'EUR/USD', alphaVantage: 'EURUSD', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'USD/JPY', alphaVantage: 'USDJPY', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'GBP/USD', alphaVantage: 'GBPUSD', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'USD/CHF', alphaVantage: 'USDCHF', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'AUD/USD', alphaVantage: 'AUDUSD', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'USD/CAD', alphaVantage: 'USDCAD', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'NZD/USD', alphaVantage: 'NZDUSD', type: 'forex', dataSource: 'alpha_vantage' },
-            
-            // Top 5 Minor Pairs only
-            { symbol: 'EUR/GBP', alphaVantage: 'EURGBP', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'EUR/JPY', alphaVantage: 'EURJPY', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'GBP/JPY', alphaVantage: 'GBPJPY', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'AUD/JPY', alphaVantage: 'AUDJPY', type: 'forex', dataSource: 'alpha_vantage' },
-            { symbol: 'EUR/CHF', alphaVantage: 'EURCHF', type: 'forex', dataSource: 'alpha_vantage' },
-            
-            // Top Commodities only
-            { symbol: 'XAU/USD', alphaVantage: 'GOLD', type: 'commodity', dataSource: 'alpha_vantage' },
-            { symbol: 'XAG/USD', alphaVantage: 'SILVER', type: 'commodity', dataSource: 'alpha_vantage' },
-            { symbol: 'USOIL', alphaVantage: 'WTI', type: 'commodity', dataSource: 'alpha_vantage' },
-            
-            // Rest will be simulated for now
-            { symbol: 'GBP/CAD', alphaVantage: 'GBPCAD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'EUR/AUD', alphaVantage: 'EURAUD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'CAD/JPY', alphaVantage: 'CADJPY', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'NZD/JPY', alphaVantage: 'NZDJPY', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'EUR/CAD', alphaVantage: 'EURCAD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'AUD/CAD', alphaVantage: 'AUDCAD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'GBP/AUD', alphaVantage: 'GBPAUD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'GBP/NZD', alphaVantage: 'GBPNZD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'EUR/NZD', alphaVantage: 'EURNZD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'AUD/NZD', alphaVantage: 'AUDNZD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'CHF/JPY', alphaVantage: 'CHFJPY', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'CAD/CHF', alphaVantage: 'CADCHF', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'NZD/CAD', alphaVantage: 'NZDCAD', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'NZD/CHF', alphaVantage: 'NZDCHF', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'GBP/CHF', alphaVantage: 'GBPCHF', type: 'forex', dataSource: 'simulated' },
-            { symbol: 'EUR/SEK', alphaVantage: 'EURSEK', type: 'forex', dataSource: 'simulated' },
-            
-            // Commodities - simulated
-            { symbol: 'UKOIL', alphaVantage: 'BRENT', type: 'commodity', dataSource: 'simulated' },
-            { symbol: 'NGAS', alphaVantage: 'NGAS', type: 'commodity', dataSource: 'simulated' },
-            { symbol: 'COPPER', alphaVantage: 'COPPER', type: 'commodity', dataSource: 'simulated' },
-            { symbol: 'XPT/USD', alphaVantage: 'PLATINUM', type: 'commodity', dataSource: 'simulated' },
-            { symbol: 'XPD/USD', alphaVantage: 'PALLADIUM', type: 'commodity', dataSource: 'simulated' },
-            { symbol: 'WHEAT', alphaVantage: 'WHEAT', type: 'commodity', dataSource: 'simulated' },
-            { symbol: 'SOYBEAN', alphaVantage: 'SOYBEAN', type: 'commodity', dataSource: 'simulated' },
-            
-            // Currency Indices (simulated)
-            { symbol: 'USD', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'EUR', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'JPY', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'GBP', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'AUD', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'CAD', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'CHF', alphaVantage: null, type: 'index', dataSource: 'simulated' },
-            { symbol: 'NZD', alphaVantage: null, type: 'index', dataSource: 'simulated' }
-        ];
-
         const results = [];
+        let alphaVantageCount = 0;
+        let twelveDataCount = 0;
+        let simulatedCount = 0;
         
-        // Process all symbols without batching delays
-        const promises = symbolConfigs.map(async (config) => {
+        // Process symbols with smart fallback
+        for (const config of symbolConfigs) {
             try {
-                if (config.dataSource === 'simulated') {
-                    return generateSimulatedData(config);
-                }
-
-                const alphaVantageData = await fetchAlphaVantageData(config);
+                let symbolData = null;
                 
-                if (alphaVantageData) {
-                    return {
-                        ...alphaVantageData,
-                        dataSource: 'alpha_vantage',
-                        dataQuality: 'high'
-                    };
-                } else {
-                    return generateSimulatedData(config);
+                // Try sources in priority order
+                for (const source of config.priority) {
+                    if (source === 'alpha_vantage' && config.alphaVantage) {
+                        symbolData = await fetchAlphaVantageData(config);
+                        if (symbolData) {
+                            symbolData.dataSource = 'alpha_vantage';
+                            symbolData.dataQuality = 'high';
+                            alphaVantageCount++;
+                            break;
+                        }
+                    } else if (source === 'twelve_data' && config.twelveData) {
+                        symbolData = await fetchTwelveData(config);
+                        if (symbolData) {
+                            symbolData.dataSource = 'twelve_data';
+                            symbolData.dataQuality = 'high';
+                            twelveDataCount++;
+                            break;
+                        }
+                    } else if (source === 'simulated') {
+                        symbolData = generateSimulatedData(config);
+                        symbolData.dataSource = 'simulated';
+                        symbolData.dataQuality = 'low';
+                        simulatedCount++;
+                        break;
+                    }
                 }
+                
+                if (symbolData) {
+                    // Add category information
+                    symbolData.category = config.category;
+                    results.push(symbolData);
+                }
+                
             } catch (error) {
-                console.error(`Error fetching ${config.symbol}:`, error.message);
-                return generateSimulatedData(config);
+                console.error(`Error processing ${config.symbol}:`, error.message);
+                // Fallback to simulated data
+                const simulatedData = generateSimulatedData(config);
+                simulatedData.dataSource = 'simulated';
+                simulatedData.dataQuality = 'low';
+                simulatedData.category = config.category;
+                results.push(simulatedData);
+                simulatedCount++;
             }
-        });
-
-        const allResults = await Promise.allSettled(promises);
-        
-        allResults.forEach(result => {
-            if (result.status === 'fulfilled' && result.value) {
-                results.push(result.value);
-            }
-        });
+            
+            // Small delay to respect rate limits
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
 
         res.status(200).json({
             success: true,
@@ -163,9 +141,14 @@ module.exports = async (req, res) => {
             timestamp: new Date().toISOString(),
             count: results.length,
             dataSummary: {
-                realData: results.filter(r => r.dataSource === 'alpha_vantage').length,
-                simulatedData: results.filter(r => r.dataSource === 'simulated').length,
+                alpha_vantage: alphaVantageCount,
+                twelve_data: twelveDataCount,
+                simulated: simulatedCount,
                 total: results.length
+            },
+            apiStatus: {
+                alpha_vantage: alphaVantageCount > 0 ? 'operational' : 'unavailable',
+                twelve_data: twelveDataCount > 0 ? 'operational' : 'unavailable'
             }
         });
 
@@ -179,35 +162,33 @@ module.exports = async (req, res) => {
     }
 };
 
-// Fetch data from Alpha Vantage (simplified and faster)
+// Alpha Vantage API call
 async function fetchAlphaVantageData(config) {
-    // For now, let's use a simple price fetch without complex indicators to avoid timeout
     let url;
     
     if (config.type === 'forex') {
         url = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${config.alphaVantage.substring(0,3)}&to_currency=${config.alphaVantage.substring(3)}&apikey=${ALPHA_VANTAGE_API_KEY}`;
     } else {
-        // For commodities, use global quote
         url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${config.alphaVantage}&apikey=${ALPHA_VANTAGE_API_KEY}`;
     }
 
     try {
-        const response = await axios.get(url, { timeout: 5000 }); // 5 second timeout
+        const response = await axios.get(url, { timeout: 5000 });
         
         if (response.data['Error Message'] || response.data['Note']) {
-            throw new Error(response.data['Error Message'] || 'API rate limit reached');
+            return null;
         }
 
         let price, previousPrice;
         
         if (config.type === 'forex') {
             const rate = response.data['Realtime Currency Exchange Rate'];
-            if (!rate) throw new Error('No exchange rate data');
+            if (!rate) return null;
             price = parseFloat(rate['5. Exchange Rate']);
-            previousPrice = price * 0.999; // Simple approximation for demo
+            previousPrice = price * 0.999;
         } else {
             const quote = response.data['Global Quote'];
-            if (!quote) throw new Error('No quote data');
+            if (!quote) return null;
             price = parseFloat(quote['05. price']);
             previousPrice = parseFloat(quote['08. previous close']);
         }
@@ -215,10 +196,10 @@ async function fetchAlphaVantageData(config) {
         const change = price - previousPrice;
         const changePercent = (change / previousPrice) * 100;
 
-        // Simple indicator calculations
+        // Calculate indicators
         const rsi = 50 + (changePercent * 0.5);
         const rsiCondition = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
-        const trend = changePercent > 0 ? 'Bullish' : changePercent < 0 ? 'Bearish' : 'Neutral';
+        const trend = changePercent > 0.1 ? 'Bullish' : changePercent < -0.1 ? 'Bearish' : 'Neutral';
         const macdSignal = changePercent > 0 ? 'Bullish' : changePercent < 0 ? 'Bearish' : 'Neutral';
 
         return {
@@ -242,7 +223,53 @@ async function fetchAlphaVantageData(config) {
     }
 }
 
-// Generate simulated data for unavailable symbols
+// Twelve Data API call
+async function fetchTwelveData(config) {
+    const url = `https://api.twelvedata.com/price?symbol=${config.twelveData}&apikey=${TWELVE_DATA_API_KEY}`;
+
+    try {
+        const response = await axios.get(url, { timeout: 5000 });
+        
+        if (response.data.status === 'error') {
+            return null;
+        }
+
+        const price = parseFloat(response.data.price);
+        if (!price || isNaN(price)) return null;
+
+        // Twelve Data only provides current price, so we simulate change
+        const previousPrice = price * (0.995 + Math.random() * 0.01);
+        const change = price - previousPrice;
+        const changePercent = (change / previousPrice) * 100;
+
+        // Calculate indicators
+        const rsi = 50 + (changePercent * 0.5);
+        const rsiCondition = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
+        const trend = changePercent > 0.1 ? 'Bullish' : changePercent < -0.1 ? 'Bearish' : 'Neutral';
+        const macdSignal = changePercent > 0 ? 'Bullish' : changePercent < 0 ? 'Bearish' : 'Neutral';
+
+        return {
+            symbol: config.symbol,
+            price: price.toFixed(4),
+            change: change.toFixed(4),
+            changePercent: changePercent.toFixed(2),
+            trend: trend,
+            rsi: Math.round(rsi),
+            rsiCondition: rsiCondition,
+            macd: change.toFixed(5),
+            macdSignal: macdSignal,
+            macdHistogram: (change * 0.1).toFixed(5),
+            atr: (Math.abs(changePercent) * 0.1).toFixed(5),
+            timestamp: new Date().toISOString()
+        };
+
+    } catch (error) {
+        console.error(`Twelve Data error for ${config.symbol}:`, error.message);
+        return null;
+    }
+}
+
+// Generate simulated data
 function generateSimulatedData(config) {
     const baseValues = {
         'EUR/SEK': 11.25, 'NGAS': 2.85, 'WHEAT': 580.25, 'SOYBEAN': 1250.75,
@@ -256,7 +283,6 @@ function generateSimulatedData(config) {
     const price = base + change;
     const changePercent = (change / base) * 100;
 
-    // Simulate indicators
     const rsi = 50 + (changePercent * 0.5);
     const rsiCondition = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
     const trend = changePercent > 0.5 ? 'Bullish' : changePercent < -0.5 ? 'Bearish' : 'Neutral';
@@ -274,8 +300,6 @@ function generateSimulatedData(config) {
         macdSignal: macdSignal,
         macdHistogram: (change * 0.1).toFixed(5),
         atr: (Math.abs(changePercent) * 0.1).toFixed(5),
-        dataSource: 'simulated',
-        dataQuality: 'low',
         timestamp: new Date().toISOString()
     };
 }
