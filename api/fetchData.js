@@ -53,60 +53,47 @@ module.exports = async (req, res) => {
     }
 
     try {
-        console.log('=== DEBUG: Starting API fetch ===');
+        console.log('=== Starting API fetch ===');
         const results = [];
         let alphaVantageCount = 0;
         let twelveDataCount = 0;
         let simulatedCount = 0;
         
-        // Process a smaller batch first to debug
-        const symbolsToProcess = symbolConfigs.slice(0, 15); // Start with just 15 symbols
-        
-        for (const config of symbolsToProcess) {
+        // Process ALL symbols with proper error handling
+        for (const config of symbolConfigs) {
             try {
-                console.log(`Processing symbol: ${config.symbol}`);
                 let symbolData = null;
+                let usedSource = 'simulated';
                 
                 // Try sources in priority order
                 for (const source of config.priority) {
                     if (source === 'alpha_vantage' && config.alphaVantage) {
-                        console.log(`  Trying Alpha Vantage for ${config.symbol}`);
                         symbolData = await fetchAlphaVantageData(config);
                         if (symbolData) {
-                            console.log(`  Alpha Vantage SUCCESS for ${config.symbol}`);
-                            symbolData.dataSource = 'alpha_vantage';
-                            symbolData.dataQuality = 'high';
+                            usedSource = 'alpha_vantage';
                             alphaVantageCount++;
                             break;
-                        } else {
-                            console.log(`  Alpha Vantage FAILED for ${config.symbol}`);
                         }
                     } else if (source === 'twelve_data' && config.twelveData) {
-                        console.log(`  Trying Twelve Data for ${config.symbol}`);
                         symbolData = await fetchTwelveData(config);
                         if (symbolData) {
-                            console.log(`  Twelve Data SUCCESS for ${config.symbol}`);
-                            symbolData.dataSource = 'twelve_data';
-                            symbolData.dataQuality = 'high';
+                            usedSource = 'twelve_data';
                             twelveDataCount++;
                             break;
-                        } else {
-                            console.log(`  Twelve Data FAILED for ${config.symbol}`);
                         }
                     } else if (source === 'simulated') {
-                        console.log(`  Using simulated data for ${config.symbol}`);
                         symbolData = generateSimulatedData(config);
-                        symbolData.dataSource = 'simulated';
-                        symbolData.dataQuality = 'low';
+                        usedSource = 'simulated';
                         simulatedCount++;
                         break;
                     }
                 }
                 
                 if (symbolData) {
+                    symbolData.dataSource = usedSource;
+                    symbolData.dataQuality = usedSource === 'simulated' ? 'low' : 'high';
                     symbolData.category = config.category;
                     results.push(symbolData);
-                    console.log(`  Completed ${config.symbol} with source: ${symbolData.dataSource}`);
                 }
                 
             } catch (error) {
@@ -121,11 +108,10 @@ module.exports = async (req, res) => {
             }
             
             // Small delay to respect rate limits
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 300));
         }
 
-        console.log('=== DEBUG: API fetch completed ===');
-        console.log(`Results: ${results.length} symbols`);
+        console.log(`=== API fetch completed: ${results.length} symbols ===`);
         console.log(`Alpha Vantage: ${alphaVantageCount}, Twelve Data: ${twelveDataCount}, Simulated: ${simulatedCount}`);
 
         res.status(200).json({
@@ -155,7 +141,7 @@ module.exports = async (req, res) => {
     }
 };
 
-// Alpha Vantage API call with better error handling
+// Alpha Vantage API call
 async function fetchAlphaVantageData(config) {
     let url;
     
@@ -166,16 +152,9 @@ async function fetchAlphaVantageData(config) {
     }
 
     try {
-        console.log(`    AV URL: ${url.split('apikey')[0]}...`);
-        const response = await axios.get(url, { timeout: 8000 });
+        const response = await axios.get(url, { timeout: 10000 });
         
-        if (response.data['Error Message']) {
-            console.log(`    AV Error Message: ${response.data['Error Message']}`);
-            return null;
-        }
-        
-        if (response.data['Note']) {
-            console.log(`    AV Rate Limit: ${response.data['Note']}`);
+        if (response.data['Error Message'] || response.data['Note']) {
             return null;
         }
 
@@ -183,22 +162,14 @@ async function fetchAlphaVantageData(config) {
         
         if (config.type === 'forex') {
             const rate = response.data['Realtime Currency Exchange Rate'];
-            if (!rate) {
-                console.log(`    AV No exchange rate data for ${config.symbol}`);
-                return null;
-            }
+            if (!rate) return null;
             price = parseFloat(rate['5. Exchange Rate']);
             previousPrice = price * 0.999;
-            console.log(`    AV Forex price: ${price}`);
         } else {
             const quote = response.data['Global Quote'];
-            if (!quote) {
-                console.log(`    AV No quote data for ${config.symbol}`);
-                return null;
-            }
+            if (!quote) return null;
             price = parseFloat(quote['05. price']);
             previousPrice = parseFloat(quote['08. previous close']);
-            console.log(`    AV Commodity price: ${price}`);
         }
 
         const change = price - previousPrice;
@@ -231,26 +202,20 @@ async function fetchAlphaVantageData(config) {
     }
 }
 
-// Twelve Data API call with better error handling
+// Twelve Data API call
 async function fetchTwelveData(config) {
     const url = `https://api.twelvedata.com/price?symbol=${config.twelveData}&apikey=${TWELVE_DATA_API_KEY}`;
 
     try {
-        console.log(`    TD URL: ${url.split('apikey')[0]}...`);
-        const response = await axios.get(url, { timeout: 8000 });
+        const response = await axios.get(url, { timeout: 10000 });
         
         if (response.data.status === 'error') {
-            console.log(`    TD Error: ${response.data.message}`);
             return null;
         }
 
         const price = parseFloat(response.data.price);
-        if (!price || isNaN(price)) {
-            console.log(`    TD Invalid price for ${config.symbol}: ${response.data.price}`);
-            return null;
-        }
+        if (!price || isNaN(price)) return null;
 
-        console.log(`    TD Price: ${price}`);
         // Twelve Data only provides current price, so we simulate change
         const previousPrice = price * (0.995 + Math.random() * 0.01);
         const change = price - previousPrice;
