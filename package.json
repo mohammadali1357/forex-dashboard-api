@@ -7,10 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "yahoo-finance2": "^2.4.0"
+    "axios": "^1.6.0"
   },
   "keywords": ["forex", "trading", "api"],
   "author": "",
   "license": "MIT"
 }
-
