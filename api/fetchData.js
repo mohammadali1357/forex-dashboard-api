@@ -20,35 +20,11 @@ const symbolConfigs = [
     { symbol: 'EUR/JPY', alphaVantage: 'EURJPY', twelveData: 'EUR/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     { symbol: 'GBP/JPY', alphaVantage: 'GBPJPY', twelveData: 'GBP/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     { symbol: 'EUR/CHF', alphaVantage: 'EURCHF', twelveData: 'EUR/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'AUD/JPY', alphaVantage: 'AUDJPY', twelveData: 'AUD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'CAD/JPY', alphaVantage: 'CADJPY', twelveData: 'CAD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'NZD/JPY', alphaVantage: 'NZDJPY', twelveData: 'NZD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'GBP/CAD', alphaVantage: 'GBPCAD', twelveData: 'GBP/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'EUR/AUD', alphaVantage: 'EURAUD', twelveData: 'EUR/AUD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'EUR/CAD', alphaVantage: 'EURCAD', twelveData: 'EUR/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'AUD/CAD', alphaVantage: 'AUDCAD', twelveData: 'AUD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'GBP/AUD', alphaVantage: 'GBPAUD', twelveData: 'GBP/AUD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'GBP/NZD', alphaVantage: 'GBPNZD', twelveData: 'GBP/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'EUR/NZD', alphaVantage: 'EURNZD', twelveData: 'EUR/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'AUD/NZD', alphaVantage: 'AUDNZD', twelveData: 'AUD/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'CHF/JPY', alphaVantage: 'CHFJPY', twelveData: 'CHF/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'CAD/CHF', alphaVantage: 'CADCHF', twelveData: 'CAD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'NZD/CAD', alphaVantage: 'NZDCAD', twelveData: 'NZD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'NZD/CHF', alphaVantage: 'NZDCHF', twelveData: 'NZD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'GBP/CHF', alphaVantage: 'GBPCHF', twelveData: 'GBP/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
-    { symbol: 'EUR/SEK', alphaVantage: 'EURSEK', twelveData: 'EUR/SEK', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     
     // Commodities - Twelve Data has better coverage
     { symbol: 'XAU/USD', alphaVantage: 'GOLD', twelveData: 'XAU/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
     { symbol: 'XAG/USD', alphaVantage: 'SILVER', twelveData: 'XAG/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
     { symbol: 'USOIL', alphaVantage: 'WTI', twelveData: 'USOIL', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'UKOIL', alphaVantage: 'BRENT', twelveData: 'UKOIL', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'NGAS', alphaVantage: null, twelveData: 'NGAS', priority: ['twelve_data'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'COPPER', alphaVantage: 'COPPER', twelveData: 'COPPER', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'XPT/USD', alphaVantage: 'PLATINUM', twelveData: 'XPT/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'XPD/USD', alphaVantage: 'PALLADIUM', twelveData: 'XPD/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'WHEAT', alphaVantage: null, twelveData: 'WHEAT', priority: ['twelve_data'], type: 'commodity', category: 'Commodities' },
-    { symbol: 'SOYBEAN', alphaVantage: null, twelveData: 'SOYBEAN', priority: ['twelve_data'], type: 'commodity', category: 'Commodities' },
     
     // Currency Indices (simulated - neither API provides these directly)
     { symbol: 'USD', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
@@ -77,35 +53,48 @@ module.exports = async (req, res) => {
     }
 
     try {
+        console.log('=== DEBUG: Starting API fetch ===');
         const results = [];
         let alphaVantageCount = 0;
         let twelveDataCount = 0;
         let simulatedCount = 0;
         
-        // Process symbols with smart fallback
-        for (const config of symbolConfigs) {
+        // Process a smaller batch first to debug
+        const symbolsToProcess = symbolConfigs.slice(0, 15); // Start with just 15 symbols
+        
+        for (const config of symbolsToProcess) {
             try {
+                console.log(`Processing symbol: ${config.symbol}`);
                 let symbolData = null;
                 
                 // Try sources in priority order
                 for (const source of config.priority) {
                     if (source === 'alpha_vantage' && config.alphaVantage) {
+                        console.log(`  Trying Alpha Vantage for ${config.symbol}`);
                         symbolData = await fetchAlphaVantageData(config);
                         if (symbolData) {
+                            console.log(`  Alpha Vantage SUCCESS for ${config.symbol}`);
                             symbolData.dataSource = 'alpha_vantage';
                             symbolData.dataQuality = 'high';
                             alphaVantageCount++;
                             break;
+                        } else {
+                            console.log(`  Alpha Vantage FAILED for ${config.symbol}`);
                         }
                     } else if (source === 'twelve_data' && config.twelveData) {
+                        console.log(`  Trying Twelve Data for ${config.symbol}`);
                         symbolData = await fetchTwelveData(config);
                         if (symbolData) {
+                            console.log(`  Twelve Data SUCCESS for ${config.symbol}`);
                             symbolData.dataSource = 'twelve_data';
                             symbolData.dataQuality = 'high';
                             twelveDataCount++;
                             break;
+                        } else {
+                            console.log(`  Twelve Data FAILED for ${config.symbol}`);
                         }
                     } else if (source === 'simulated') {
+                        console.log(`  Using simulated data for ${config.symbol}`);
                         symbolData = generateSimulatedData(config);
                         symbolData.dataSource = 'simulated';
                         symbolData.dataQuality = 'low';
@@ -115,9 +104,9 @@ module.exports = async (req, res) => {
                 }
                 
                 if (symbolData) {
-                    // Add category information
                     symbolData.category = config.category;
                     results.push(symbolData);
+                    console.log(`  Completed ${config.symbol} with source: ${symbolData.dataSource}`);
                 }
                 
             } catch (error) {
@@ -132,8 +121,12 @@ module.exports = async (req, res) => {
             }
             
             // Small delay to respect rate limits
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
+
+        console.log('=== DEBUG: API fetch completed ===');
+        console.log(`Results: ${results.length} symbols`);
+        console.log(`Alpha Vantage: ${alphaVantageCount}, Twelve Data: ${twelveDataCount}, Simulated: ${simulatedCount}`);
 
         res.status(200).json({
             success: true,
@@ -162,7 +155,7 @@ module.exports = async (req, res) => {
     }
 };
 
-// Alpha Vantage API call
+// Alpha Vantage API call with better error handling
 async function fetchAlphaVantageData(config) {
     let url;
     
@@ -173,9 +166,16 @@ async function fetchAlphaVantageData(config) {
     }
 
     try {
-        const response = await axios.get(url, { timeout: 5000 });
+        console.log(`    AV URL: ${url.split('apikey')[0]}...`);
+        const response = await axios.get(url, { timeout: 8000 });
         
-        if (response.data['Error Message'] || response.data['Note']) {
+        if (response.data['Error Message']) {
+            console.log(`    AV Error Message: ${response.data['Error Message']}`);
+            return null;
+        }
+        
+        if (response.data['Note']) {
+            console.log(`    AV Rate Limit: ${response.data['Note']}`);
             return null;
         }
 
@@ -183,14 +183,22 @@ async function fetchAlphaVantageData(config) {
         
         if (config.type === 'forex') {
             const rate = response.data['Realtime Currency Exchange Rate'];
-            if (!rate) return null;
+            if (!rate) {
+                console.log(`    AV No exchange rate data for ${config.symbol}`);
+                return null;
+            }
             price = parseFloat(rate['5. Exchange Rate']);
             previousPrice = price * 0.999;
+            console.log(`    AV Forex price: ${price}`);
         } else {
             const quote = response.data['Global Quote'];
-            if (!quote) return null;
+            if (!quote) {
+                console.log(`    AV No quote data for ${config.symbol}`);
+                return null;
+            }
             price = parseFloat(quote['05. price']);
             previousPrice = parseFloat(quote['08. previous close']);
+            console.log(`    AV Commodity price: ${price}`);
         }
 
         const change = price - previousPrice;
@@ -223,20 +231,26 @@ async function fetchAlphaVantageData(config) {
     }
 }
 
-// Twelve Data API call
+// Twelve Data API call with better error handling
 async function fetchTwelveData(config) {
     const url = `https://api.twelvedata.com/price?symbol=${config.twelveData}&apikey=${TWELVE_DATA_API_KEY}`;
 
     try {
-        const response = await axios.get(url, { timeout: 5000 });
+        console.log(`    TD URL: ${url.split('apikey')[0]}...`);
+        const response = await axios.get(url, { timeout: 8000 });
         
         if (response.data.status === 'error') {
+            console.log(`    TD Error: ${response.data.message}`);
             return null;
         }
 
         const price = parseFloat(response.data.price);
-        if (!price || isNaN(price)) return null;
+        if (!price || isNaN(price)) {
+            console.log(`    TD Invalid price for ${config.symbol}: ${response.data.price}`);
+            return null;
+        }
 
+        console.log(`    TD Price: ${price}`);
         // Twelve Data only provides current price, so we simulate change
         const previousPrice = price * (0.995 + Math.random() * 0.01);
         const change = price - previousPrice;
@@ -272,10 +286,12 @@ async function fetchTwelveData(config) {
 // Generate simulated data
 function generateSimulatedData(config) {
     const baseValues = {
-        'EUR/SEK': 11.25, 'NGAS': 2.85, 'WHEAT': 580.25, 'SOYBEAN': 1250.75,
+        'EUR/USD': 1.0745, 'USD/JPY': 149.25, 'GBP/USD': 1.2650, 'USD/CHF': 0.8950,
+        'AUD/USD': 0.6450, 'USD/CAD': 1.3520, 'NZD/USD': 0.5920, 'EUR/GBP': 0.8570,
+        'EUR/JPY': 158.50, 'GBP/JPY': 188.75, 'EUR/CHF': 0.9550, 'AUD/JPY': 96.20,
+        'XAU/USD': 1925.6, 'XAG/USD': 23.15, 'USOIL': 78.40,
         'USD': 104.5, 'EUR': 92.8, 'JPY': 76.2, 'GBP': 85.6,
-        'AUD': 68.9, 'CAD': 74.3, 'CHF': 88.7, 'NZD': 71.4,
-        'UKOIL': 82.75, 'COPPER': 3.82, 'XPT/USD': 920.50, 'XPD/USD': 1250.80
+        'AUD': 68.9, 'CAD': 74.3, 'CHF': 88.7, 'NZD': 71.4
     };
     
     const base = baseValues[config.symbol] || 1.0;
