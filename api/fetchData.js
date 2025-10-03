@@ -4,9 +4,9 @@ const axios = require('axios');
 const ALPHA_VANTAGE_API_KEY = 'SFQ7TST27CVZTOQU';
 const TWELVE_DATA_API_KEY = '7c5e73198a0b4ea78c5342bd0800aea7';
 
-// Enhanced symbol configuration with priority mapping
+// Enhanced symbol configuration with priority mapping - ALL 38 SYMBOLS
 const symbolConfigs = [
-    // Major Pairs - High priority
+    // Major Pairs - High priority (7 symbols)
     { symbol: 'EUR/USD', alphaVantage: 'EURUSD', twelveData: 'EUR/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
     { symbol: 'USD/JPY', alphaVantage: 'USDJPY', twelveData: 'USD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
     { symbol: 'GBP/USD', alphaVantage: 'GBPUSD', twelveData: 'GBP/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
@@ -15,18 +15,41 @@ const symbolConfigs = [
     { symbol: 'USD/CAD', alphaVantage: 'USDCAD', twelveData: 'USD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
     { symbol: 'NZD/USD', alphaVantage: 'NZDUSD', twelveData: 'NZD/USD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Major Pairs' },
     
-    // Minor Pairs - Medium priority
+    // Minor Pairs - Medium priority (21 symbols)
     { symbol: 'EUR/GBP', alphaVantage: 'EURGBP', twelveData: 'EUR/GBP', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     { symbol: 'EUR/JPY', alphaVantage: 'EURJPY', twelveData: 'EUR/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     { symbol: 'GBP/JPY', alphaVantage: 'GBPJPY', twelveData: 'GBP/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     { symbol: 'EUR/CHF', alphaVantage: 'EURCHF', twelveData: 'EUR/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'AUD/JPY', alphaVantage: 'AUDJPY', twelveData: 'AUD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'CAD/JPY', alphaVantage: 'CADJPY', twelveData: 'CAD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'NZD/JPY', alphaVantage: 'NZDJPY', twelveData: 'NZD/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/CAD', alphaVantage: 'GBPCAD', twelveData: 'GBP/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/AUD', alphaVantage: 'EURAUD', twelveData: 'EUR/AUD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/CAD', alphaVantage: 'EURCAD', twelveData: 'EUR/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'AUD/CAD', alphaVantage: 'AUDCAD', twelveData: 'AUD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/AUD', alphaVantage: 'GBPAUD', twelveData: 'GBP/AUD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/NZD', alphaVantage: 'GBPNZD', twelveData: 'GBP/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'EUR/NZD', alphaVantage: 'EURNZD', twelveData: 'EUR/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'AUD/NZD', alphaVantage: 'AUDNZD', twelveData: 'AUD/NZD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'CHF/JPY', alphaVantage: 'CHFJPY', twelveData: 'CHF/JPY', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'CAD/CHF', alphaVantage: 'CADCHF', twelveData: 'CAD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'NZD/CAD', alphaVantage: 'NZDCAD', twelveData: 'NZD/CAD', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'NZD/CHF', alphaVantage: 'NZDCHF', twelveData: 'NZD/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
+    { symbol: 'GBP/CHF', alphaVantage: 'GBPCHF', twelveData: 'GBP/CHF', priority: ['alpha_vantage', 'twelve_data'], type: 'forex', category: 'Minor Pairs' },
     
-    // Commodities - Twelve Data has better coverage
+    // Commodities - Twelve Data has better coverage (10 symbols)
     { symbol: 'XAU/USD', alphaVantage: 'GOLD', twelveData: 'XAU/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
     { symbol: 'XAG/USD', alphaVantage: 'SILVER', twelveData: 'XAG/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
     { symbol: 'USOIL', alphaVantage: 'WTI', twelveData: 'USOIL', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'UKOIL', alphaVantage: 'BRENT', twelveData: 'UKOIL', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'NGAS', alphaVantage: 'NATURALGAS', twelveData: 'NGAS', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'COPPER', alphaVantage: 'COPPER', twelveData: 'COPPER', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'XPT/USD', alphaVantage: 'PLATINUM', twelveData: 'XPT/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'XPD/USD', alphaVantage: 'PALLADIUM', twelveData: 'XPD/USD', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'WHEAT', alphaVantage: 'WHEAT', twelveData: 'WHEAT', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
+    { symbol: 'SOYBEAN', alphaVantage: 'SOYBEAN', twelveData: 'SOYBEAN', priority: ['twelve_data', 'alpha_vantage'], type: 'commodity', category: 'Commodities' },
     
-    // Currency Indices (simulated - neither API provides these directly)
+    // Currency Indices (simulated - neither API provides these directly) (8 symbols)
     { symbol: 'USD', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
     { symbol: 'EUR', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
     { symbol: 'JPY', alphaVantage: null, twelveData: null, priority: ['simulated'], type: 'index', category: 'Currency Indices' },
@@ -284,3 +307,4 @@ function generateSimulatedData(config) {
         timestamp: new Date().toISOString()
     };
 }
+
